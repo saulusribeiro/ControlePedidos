@@ -1,5 +1,6 @@
 package com.saulusribeiro.controlepedidos;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +13,20 @@ import com.saulusribeiro.controlepedidos.domain.Cidade;
 import com.saulusribeiro.controlepedidos.domain.Cliente;
 import com.saulusribeiro.controlepedidos.domain.Endereco;
 import com.saulusribeiro.controlepedidos.domain.Estado;
+import com.saulusribeiro.controlepedidos.domain.Pagamento;
+import com.saulusribeiro.controlepedidos.domain.PagamentoComBoleto;
+import com.saulusribeiro.controlepedidos.domain.PagamentoComCartao;
+import com.saulusribeiro.controlepedidos.domain.Pedido;
 import com.saulusribeiro.controlepedidos.domain.Produto;
+import com.saulusribeiro.controlepedidos.domain.enums.EstadoPagamento;
 import com.saulusribeiro.controlepedidos.domain.enums.TipoCliente;
 import com.saulusribeiro.controlepedidos.respositories.CategoriaRepository;
 import com.saulusribeiro.controlepedidos.respositories.CidadeRepository;
 import com.saulusribeiro.controlepedidos.respositories.ClienteRepository;
 import com.saulusribeiro.controlepedidos.respositories.EnderecoRepository;
 import com.saulusribeiro.controlepedidos.respositories.EstadoRepository;
+import com.saulusribeiro.controlepedidos.respositories.PagamentoRepository;
+import com.saulusribeiro.controlepedidos.respositories.PedidoRepository;
 import com.saulusribeiro.controlepedidos.respositories.ProdutoRepository;
 
 @SpringBootApplication
@@ -42,9 +50,13 @@ public class ControlePedidosBackendApplication implements CommandLineRunner{
 	@Autowired
 	private EnderecoRepository enderecoRepository;
 
+	@Autowired
+	private PedidoRepository pedidoRepository;
+	
+	@Autowired
+	private PagamentoRepository pagamentoRepository;
 
-
-		
+	
 	public static void main(String[] args) {
 		SpringApplication.run(ControlePedidosBackendApplication.class, args);
 	}
@@ -91,6 +103,23 @@ public class ControlePedidosBackendApplication implements CommandLineRunner{
 		
 		clienteRepository.saveAll(Arrays.asList(cliente1));
 		enderecoRepository.saveAll(Arrays.asList(end1, end2));
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm");
+		
+		Pedido pedido1 = new Pedido(null,sdf.parse("30/09/2023 10:32"), cliente1, end1 );
+		Pedido pedido2 = new Pedido(null,sdf.parse("10/10/2023 19:32"), cliente1, end2 );
+		
+		Pagamento pagamento1 = new PagamentoComCartao(null, EstadoPagamento.QUITADO, pedido1, 6);
+		pedido1.setPagamento(pagamento1);
+		
+		Pagamento pagamento2 = new PagamentoComBoleto(null, EstadoPagamento.PENDENTE, pedido2,sdf.parse("20/10/2023 00:00"),null);
+		pedido2.setPagamento(pagamento2);
+		
+		cliente1.getPedidos().addAll(Arrays.asList(pedido1, pedido2));
+		
+		pedidoRepository.saveAll(Arrays.asList(pedido1, pedido2));
+		pagamentoRepository.saveAll(Arrays.asList(pagamento1, pagamento2));
+
 
 	}
 
